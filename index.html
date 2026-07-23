@@ -2,47 +2,64 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>🥗 Healthy Meal Planner & Shopping List</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>🥗 Healthy Meal Planner</title>
+
+<!-- ============== PWA META ============== -->
+<link rel="manifest" href="./manifest.json" />
+<meta name="theme-color" content="#2d6a4f" />
+<meta name="description" content="Plan healthy meals and generate smart shopping lists — synced across your devices." />
+
+<!-- iOS home-screen support -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Meal Planner" />
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+
 <style>
   :root {
-    --green-900:#1b4332;
-    --green-700:#2d6a4f;
-    --green-500:#40916c;
-    --green-300:#95d5b2;
-    --green-100:#d8f3dc;
-    --bg:#f7faf7;
-    --card:#ffffff;
-    --text:#1b2a24;
-    --muted:#6b7c74;
-    --border:#e3ece6;
-    --accent:#ff8f3f;
-    --danger:#e63946;
-    --shadow:0 6px 20px rgba(27,67,50,.08);
+    --green-900:#1b4332;--green-700:#2d6a4f;--green-500:#40916c;
+    --green-300:#95d5b2;--green-100:#d8f3dc;--bg:#f7faf7;
+    --card:#ffffff;--text:#1b2a24;--muted:#6b7c74;--border:#e3ece6;
+    --accent:#ff8f3f;--danger:#e63946;--shadow:0 6px 20px rgba(27,67,50,.08);
   }
   *{box-sizing:border-box}
   body{
     margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     background:linear-gradient(180deg,#eaf5ee 0%, var(--bg) 220px);
     color:var(--text);min-height:100vh;
+    /* iOS safe areas (notch / home indicator) */
+    padding-top:env(safe-area-inset-top);
+    padding-bottom:env(safe-area-inset-bottom);
+    padding-left:env(safe-area-inset-left);
+    padding-right:env(safe-area-inset-right);
   }
-  header{
-    padding:24px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;
-  }
+  header{padding:24px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
   .brand{display:flex;align-items:center;gap:12px}
   .brand h1{margin:0;font-size:24px;color:var(--green-900)}
   .brand p{margin:0;color:var(--muted);font-size:13px}
-  .logo{
-    width:44px;height:44px;border-radius:12px;background:var(--green-700);
-    display:grid;place-items:center;color:#fff;font-size:22px;box-shadow:var(--shadow);
-  }
+  .logo{width:44px;height:44px;border-radius:12px;background:var(--green-700);display:grid;place-items:center;color:#fff;font-size:22px;box-shadow:var(--shadow)}
   nav.tabs{display:flex;gap:6px;background:#fff;padding:6px;border-radius:14px;box-shadow:var(--shadow)}
-  nav.tabs button{
-    border:0;background:transparent;padding:10px 16px;border-radius:10px;cursor:pointer;
-    font-weight:600;color:var(--muted);font-size:14px;transition:all .2s;
-  }
+  nav.tabs button{border:0;background:transparent;padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:600;color:var(--muted);font-size:14px;transition:all .2s}
   nav.tabs button.active{background:var(--green-700);color:#fff}
   nav.tabs button:hover:not(.active){background:var(--green-100);color:var(--green-900)}
+  .header-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .sync-badge{display:flex;align-items:center;gap:6px;background:#fff;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;box-shadow:var(--shadow)}
+  .sync-badge .dot{width:8px;height:8px;border-radius:50%;background:#aaa}
+  .sync-badge.online .dot{background:#22c55e;box-shadow:0 0 6px #22c55e}
+  .sync-badge.saving .dot{background:#f59e0b;animation:pulse 1s infinite}
+  .sync-badge.offline .dot{background:#ef4444}
+  @keyframes pulse{50%{opacity:.4}}
+  .user-chip{display:flex;align-items:center;gap:8px;background:#fff;padding:4px 12px 4px 4px;border-radius:20px;font-size:13px;font-weight:600;box-shadow:var(--shadow)}
+  .user-chip img{width:28px;height:28px;border-radius:50%}
+  .user-chip button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:12px;padding:0 4px}
+  .user-chip button:hover{color:var(--danger)}
+  .backup-bar{display:flex;gap:6px;align-items:center}
+  .backup-bar .ghost{padding:8px 12px;font-size:13px;background:#fff;box-shadow:var(--shadow)}
+
   main{padding:8px 32px 60px;max-width:1400px;margin:0 auto}
   .view{display:none;animation:fade .25s ease}
   .view.active{display:block}
@@ -51,19 +68,12 @@
   .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
   .section-head h2{margin:0;color:var(--green-900);font-size:20px}
   .section-head p{margin:4px 0 0;color:var(--muted);font-size:13px}
-  button.primary{
-    background:var(--green-700);color:#fff;border:0;padding:10px 18px;border-radius:10px;
-    font-weight:600;cursor:pointer;font-size:14px;transition:.2s
-  }
+  button.primary{background:var(--green-700);color:#fff;border:0;padding:10px 18px;border-radius:10px;font-weight:600;cursor:pointer;font-size:14px;transition:.2s}
   button.primary:hover{background:var(--green-900)}
-  button.ghost{
-    background:transparent;color:var(--green-700);border:1px solid var(--green-300);
-    padding:8px 14px;border-radius:10px;font-weight:600;cursor:pointer;font-size:13px
-  }
+  button.ghost{background:transparent;color:var(--green-700);border:1px solid var(--green-300);padding:8px 14px;border-radius:10px;font-weight:600;cursor:pointer;font-size:13px}
   button.ghost:hover{background:var(--green-100)}
   button.danger{background:transparent;color:var(--danger);border:0;cursor:pointer;font-size:13px;padding:4px 8px}
 
-  /* PLANNER GRID */
   .planner{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-top:8px}
   @media(max-width:1100px){.planner{grid-template-columns:repeat(3,1fr)}}
   @media(max-width:700px){.planner{grid-template-columns:1fr}}
@@ -72,10 +82,7 @@
   .day .date{font-size:11px;color:var(--muted);font-weight:500}
   .meal-slot{margin-top:10px}
   .meal-slot label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700}
-  .meal-slot .slot{
-    margin-top:4px;background:#f4faf6;border:1px dashed var(--green-300);border-radius:10px;padding:8px;
-    min-height:50px;font-size:13px;color:var(--text);position:relative;cursor:pointer;transition:.15s
-  }
+  .meal-slot .slot{margin-top:4px;background:#f4faf6;border:1px dashed var(--green-300);border-radius:10px;padding:8px;min-height:50px;font-size:13px;color:var(--text);position:relative;cursor:pointer;transition:.15s}
   .meal-slot .slot:hover{background:var(--green-100)}
   .meal-slot .slot.empty{color:var(--muted);font-style:italic;text-align:center;display:flex;align-items:center;justify-content:center}
   .meal-slot .slot .meal-name{font-weight:600;color:var(--green-900)}
@@ -83,7 +90,6 @@
   .clear-btn{position:absolute;top:4px;right:6px;background:none;border:0;color:var(--muted);cursor:pointer;font-size:14px}
   .clear-btn:hover{color:var(--danger)}
 
-  /* RECIPE LIBRARY */
   .recipes{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:16px}
   .recipe{background:var(--card);border-radius:14px;overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow);display:flex;flex-direction:column;transition:.2s}
   .recipe:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(27,67,50,.12)}
@@ -97,20 +103,14 @@
   .badge.time{background:#e6f1ff;color:#1c4a8c}
   .recipe .actions{display:flex;gap:8px;justify-content:space-between;align-items:center}
   .search-bar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-  .search-bar input,.search-bar select{
-    padding:10px 14px;border:1px solid var(--border);border-radius:10px;font-size:14px;background:#fff;font-family:inherit
-  }
+  .search-bar input,.search-bar select{padding:10px 14px;border:1px solid var(--border);border-radius:10px;font-size:14px;background:#fff;font-family:inherit}
   .search-bar input{flex:1;min-width:200px}
 
-  /* SHOPPING LIST */
   .shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
   @media(max-width:900px){.shop-grid{grid-template-columns:1fr}}
   .category-group{margin-bottom:14px}
   .category-group h4{margin:0 0 8px;font-size:13px;color:var(--green-700);text-transform:uppercase;letter-spacing:.5px}
-  .shop-item{
-    display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f9fdfa;border:1px solid var(--border);
-    border-radius:10px;margin-bottom:6px;transition:.15s
-  }
+  .shop-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f9fdfa;border:1px solid var(--border);border-radius:10px;margin-bottom:6px;transition:.15s}
   .shop-item.checked{opacity:.5;text-decoration:line-through}
   .shop-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--green-700);cursor:pointer}
   .shop-item .name{flex:1;font-size:14px;font-weight:500}
@@ -118,62 +118,117 @@
   .empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
   .empty-state .icon{font-size:48px;margin-bottom:10px}
 
-  /* PANTRY */
   .pantry-add{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
   .pantry-add input{flex:1;min-width:180px;padding:10px 14px;border:1px solid var(--border);border-radius:10px;font-size:14px}
   .pantry-list{display:flex;flex-wrap:wrap;gap:8px}
-  .pantry-chip{
-    background:var(--green-100);color:var(--green-900);padding:6px 12px;border-radius:20px;
-    font-size:13px;display:flex;align-items:center;gap:6px;font-weight:500
-  }
+  .pantry-chip{background:var(--green-100);color:var(--green-900);padding:6px 12px;border-radius:20px;font-size:13px;display:flex;align-items:center;gap:6px;font-weight:500}
   .pantry-chip button{background:none;border:0;color:var(--green-900);cursor:pointer;font-size:16px;line-height:1;padding:0}
 
-  /* MODAL */
-  .modal-back{
-    position:fixed;inset:0;background:rgba(27,42,36,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:20px
-  }
+  .modal-back{position:fixed;inset:0;background:rgba(27,42,36,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
   .modal-back.open{display:flex}
-  .modal{
-    background:#fff;border-radius:16px;padding:24px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)
-  }
+  .modal{background:#fff;border-radius:16px;padding:24px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
   .modal h3{margin:0 0 8px;color:var(--green-900)}
   .modal p.muted{color:var(--muted);font-size:13px;margin:0 0 16px}
   .form-row{margin-bottom:12px}
   .form-row label{display:block;font-size:12px;font-weight:600;color:var(--green-900);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
-  .form-row input,.form-row textarea,.form-row select{
-    width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit
-  }
+  .form-row input,.form-row textarea,.form-row select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit}
   .form-row textarea{resize:vertical;min-height:80px}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
   .recipe-list-in-modal{max-height:340px;overflow-y:auto;margin-top:10px}
-  .modal-recipe{
-    padding:10px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px;cursor:pointer;
-    display:flex;align-items:center;gap:10px;transition:.15s
-  }
+  .modal-recipe{padding:10px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.15s}
   .modal-recipe:hover{background:var(--green-100);border-color:var(--green-300)}
   .modal-recipe .emoji{font-size:22px}
   .modal-recipe .info{flex:1}
   .modal-recipe .info h5{margin:0;font-size:14px;color:var(--green-900)}
   .modal-recipe .info span{font-size:11px;color:var(--muted)}
 
-  /* SUMMARY */
   .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
   @media(max-width:800px){.summary{grid-template-columns:repeat(2,1fr)}}
   .stat{background:#fff;padding:16px;border-radius:14px;border:1px solid var(--border);box-shadow:var(--shadow)}
   .stat .num{font-size:26px;font-weight:700;color:var(--green-900)}
   .stat .lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
   .stat .icon{float:right;font-size:22px;opacity:.6}
+
+  .overlay{position:fixed;inset:0;background:linear-gradient(135deg,#d8f3dc,#95d5b2);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+  .overlay.open{display:flex}
+  .overlay .box{background:#fff;border-radius:20px;padding:36px;max-width:440px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(27,67,50,.2)}
+  .overlay .box .emoji{font-size:60px;margin-bottom:10px}
+  .overlay .box h2{margin:0 0 10px;color:var(--green-900)}
+  .overlay .box p{color:var(--muted);margin:0 0 20px;font-size:14px;line-height:1.5}
+  .google-btn{display:inline-flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--border);padding:12px 24px;border-radius:10px;font-weight:600;cursor:pointer;font-size:14px;color:#333;transition:.2s;box-shadow:0 2px 6px rgba(0,0,0,.05)}
+  .google-btn:hover{background:#f9f9f9;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+  .google-btn svg{width:20px;height:20px}
+  .spinner{width:40px;height:40px;border:4px solid var(--green-100);border-top-color:var(--green-700);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .config-warning{background:#fff2e6;color:#8a4a10;padding:12px 16px;border-radius:10px;font-size:13px;margin-top:16px;text-align:left;line-height:1.5}
+
+  /* PWA update banner + install prompt */
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(120%);
+    background:var(--green-900);color:#fff;padding:14px 20px;border-radius:12px;
+    box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;align-items:center;gap:12px;
+    z-index:150;transition:transform .3s ease;font-size:14px;max-width:calc(100% - 40px)
+  }
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  .toast button{background:var(--green-500);color:#fff;border:0;padding:6px 12px;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px}
+  .toast button.close{background:transparent;color:#fff;opacity:.7;padding:4px 8px}
 </style>
 </head>
 <body>
 
+<!-- LOADING OVERLAY -->
+<div class="overlay open" id="loadingOverlay">
+  <div class="box">
+    <div class="spinner"></div>
+    <h2>Loading your kitchen…</h2>
+    <p>Connecting to the cloud</p>
+  </div>
+</div>
+
+<!-- AUTH OVERLAY -->
+<div class="overlay" id="authOverlay">
+  <div class="box">
+    <div class="emoji">🥗</div>
+    <h2>Healthy Meal Planner</h2>
+    <p>Sign in to sync your recipes, meal plans, and shopping list across all your devices in real-time.</p>
+    <button class="google-btn" onclick="signIn()">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Sign in with Google
+    </button>
+    <div id="configWarning" class="config-warning" style="display:none">
+      ⚠️ <strong>Firebase not configured yet.</strong><br/>
+      Edit this HTML file and replace the <code>firebaseConfig</code> object near the top of the &lt;script&gt; section with your own values from
+      <a href="https://console.firebase.google.com" target="_blank" rel="noopener">Firebase Console</a>.
+    </div>
+  </div>
+</div>
+
+<!-- PWA UPDATE / INSTALL TOASTS -->
+<div class="toast" id="updateToast">
+  <span>🎉 New version available!</span>
+  <button onclick="applyUpdate()">Reload</button>
+  <button class="close" onclick="document.getElementById('updateToast').classList.remove('show')">✕</button>
+</div>
+<div class="toast" id="installToast">
+  <span>📱 Install Meal Planner on your device?</span>
+  <button onclick="triggerInstall()">Install</button>
+  <button class="close" onclick="dismissInstall()">Not now</button>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none">
 <header>
   <div class="brand">
     <div class="logo">🥗</div>
     <div>
       <h1>Healthy Meal Planner</h1>
-      <p>Plan meals, cook smart, shop only what you need</p>
+      <p>Cloud-synced across your devices</p>
     </div>
   </div>
   <nav class="tabs">
@@ -182,11 +237,22 @@
     <button data-tab="shopping">🛒 Shopping</button>
     <button data-tab="pantry">🥫 Pantry</button>
   </nav>
+  <div class="header-right">
+    <div class="sync-badge" id="syncBadge"><span class="dot"></span><span id="syncText">Syncing…</span></div>
+    <div class="user-chip" id="userChip">
+      <img id="userAvatar" src="" alt="" />
+      <span id="userName">User</span>
+      <button onclick="signOut()" title="Sign out">↪</button>
+    </div>
+    <div class="backup-bar">
+      <button class="ghost" onclick="exportBackup()" title="Download all your data as a JSON file">⬇️ Export</button>
+      <button class="ghost" onclick="document.getElementById('importFile').click()" title="Restore data from a JSON backup file">⬆️ Import</button>
+      <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importBackup(event)" />
+    </div>
+  </div>
 </header>
 
 <main>
-
-  <!-- PLANNER -->
   <section class="view active" id="view-planner">
     <div class="summary">
       <div class="stat"><span class="icon">🍽️</span><div class="num" id="stat-meals">0</div><div class="lbl">Meals planned</div></div>
@@ -194,12 +260,8 @@
       <div class="stat"><span class="icon">🛒</span><div class="num" id="stat-shop">0</div><div class="lbl">Items to buy</div></div>
       <div class="stat"><span class="icon">🥫</span><div class="num" id="stat-pantry">0</div><div class="lbl">In pantry</div></div>
     </div>
-
     <div class="section-head">
-      <div>
-        <h2>This week's meals</h2>
-        <p id="week-range"></p>
-      </div>
+      <div><h2>This week's meals</h2><p id="week-range"></p></div>
       <div style="display:flex;gap:8px">
         <button class="ghost" onclick="shiftWeek(-1)">← Prev</button>
         <button class="ghost" onclick="shiftWeek(0)">Today</button>
@@ -207,17 +269,12 @@
         <button class="primary" onclick="clearWeek()">Clear week</button>
       </div>
     </div>
-
     <div class="planner" id="plannerGrid"></div>
   </section>
 
-  <!-- RECIPES -->
   <section class="view" id="view-recipes">
     <div class="section-head">
-      <div>
-        <h2>Recipe library</h2>
-        <p>Browse healthy recipes or add your own</p>
-      </div>
+      <div><h2>Recipe library</h2><p>Browse healthy recipes or add your own</p></div>
       <button class="primary" onclick="openRecipeForm()">+ New recipe</button>
     </div>
     <div class="search-bar">
@@ -233,13 +290,9 @@
     <div class="recipes" id="recipesGrid"></div>
   </section>
 
-  <!-- SHOPPING -->
   <section class="view" id="view-shopping">
     <div class="section-head">
-      <div>
-        <h2>Shopping list</h2>
-        <p>Ingredients needed for this week's meals (missing from pantry)</p>
-      </div>
+      <div><h2>Shopping list</h2><p>Ingredients needed for this week's meals (missing from pantry)</p></div>
       <div style="display:flex;gap:8px">
         <button class="ghost" onclick="copyShoppingList()">📋 Copy</button>
         <button class="ghost" onclick="clearChecked()">Clear ✓</button>
@@ -248,13 +301,9 @@
     <div class="card" id="shoppingCard"></div>
   </section>
 
-  <!-- PANTRY -->
   <section class="view" id="view-pantry">
     <div class="section-head">
-      <div>
-        <h2>My pantry</h2>
-        <p>List what you already have — it will be removed from your shopping list</p>
-      </div>
+      <div><h2>My pantry</h2><p>List what you already have — it will be removed from your shopping list</p></div>
     </div>
     <div class="card">
       <div class="pantry-add">
@@ -264,68 +313,43 @@
       <div class="pantry-list" id="pantryList"></div>
     </div>
   </section>
-
 </main>
+</div>
 
-<!-- MODAL: Pick a recipe for a slot -->
+<!-- MODALS -->
 <div class="modal-back" id="pickModal">
   <div class="modal">
     <h3>Choose a recipe</h3>
     <p class="muted" id="pickTarget"></p>
     <input type="text" id="pickSearch" placeholder="🔍 Search…" oninput="renderPickList()" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:10px" />
     <div class="recipe-list-in-modal" id="pickList"></div>
-    <div class="modal-actions">
-      <button class="ghost" onclick="closeModal('pickModal')">Cancel</button>
-    </div>
+    <div class="modal-actions"><button class="ghost" onclick="closeModal('pickModal')">Cancel</button></div>
   </div>
 </div>
 
-<!-- MODAL: New/edit recipe -->
 <div class="modal-back" id="recipeModal">
   <div class="modal">
     <h3 id="recipeModalTitle">New recipe</h3>
     <p class="muted">Add your own healthy meal</p>
-    <div class="form-row">
-      <label>Name</label>
-      <input id="rf-name" type="text" placeholder="e.g., Mediterranean quinoa bowl" />
-    </div>
+    <div class="form-row"><label>Name</label><input id="rf-name" type="text" placeholder="e.g., Mediterranean quinoa bowl" /></div>
     <div class="row2">
-      <div class="form-row">
-        <label>Emoji / icon</label>
-        <input id="rf-emoji" type="text" maxlength="2" placeholder="🥗" />
-      </div>
-      <div class="form-row">
-        <label>Category</label>
+      <div class="form-row"><label>Emoji / icon</label><input id="rf-emoji" type="text" maxlength="2" placeholder="🥗" /></div>
+      <div class="form-row"><label>Category</label>
         <select id="rf-category">
-          <option value="breakfast">Breakfast</option>
-          <option value="lunch">Lunch</option>
-          <option value="dinner">Dinner</option>
-          <option value="snack">Snack</option>
+          <option value="breakfast">Breakfast</option><option value="lunch">Lunch</option>
+          <option value="dinner">Dinner</option><option value="snack">Snack</option>
         </select>
       </div>
     </div>
     <div class="row2">
-      <div class="form-row">
-        <label>Calories (kcal)</label>
-        <input id="rf-cal" type="number" placeholder="450" />
-      </div>
-      <div class="form-row">
-        <label>Cook time (min)</label>
-        <input id="rf-time" type="number" placeholder="20" />
-      </div>
+      <div class="form-row"><label>Calories (kcal)</label><input id="rf-cal" type="number" placeholder="450" /></div>
+      <div class="form-row"><label>Cook time (min)</label><input id="rf-time" type="number" placeholder="20" /></div>
     </div>
-    <div class="form-row">
-      <label>Short description</label>
-      <input id="rf-desc" type="text" placeholder="Fresh, protein-rich, ready in 20 min" />
-    </div>
-    <div class="form-row">
-      <label>Ingredients (one per line: name, quantity)</label>
+    <div class="form-row"><label>Short description</label><input id="rf-desc" type="text" placeholder="Fresh, protein-rich, ready in 20 min" /></div>
+    <div class="form-row"><label>Ingredients (one per line: name, quantity)</label>
       <textarea id="rf-ing" placeholder="quinoa, 1 cup&#10;cherry tomatoes, 200 g&#10;feta cheese, 100 g"></textarea>
     </div>
-    <div class="form-row">
-      <label>Tags (comma separated)</label>
-      <input id="rf-tags" type="text" placeholder="high-protein, vegetarian, gluten-free" />
-    </div>
+    <div class="form-row"><label>Tags (comma separated)</label><input id="rf-tags" type="text" placeholder="high-protein, vegetarian, gluten-free" /></div>
     <div class="modal-actions">
       <button class="ghost" onclick="closeModal('recipeModal')">Cancel</button>
       <button class="primary" onclick="saveRecipe()">Save recipe</button>
@@ -333,21 +357,53 @@
   </div>
 </div>
 
-<!-- MODAL: View recipe details -->
 <div class="modal-back" id="viewModal">
   <div class="modal" id="viewModalBody"></div>
 </div>
 
-<script>
-// ============== DATA ==============
-const STORAGE = {
-  recipes: 'hmp_recipes_v1',
-  plan: 'hmp_plan_v1',
-  pantry: 'hmp_pantry_v1',
-  shopChecked: 'hmp_shop_v1',
-  weekStart: 'hmp_weekstart_v1'
-};
+<!-- ============== FIREBASE SDK ============== -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, doc, setDoc, onSnapshot, enableIndexedDbPersistence }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+  // ============================================================
+  // 🔧 TODO: PASTE YOUR FIREBASE CONFIG HERE
+  // Get it from: https://console.firebase.google.com
+  // → Project settings → Your apps → Web app → Config
+  // ============================================================
+  const firebaseConfig = {
+    apiKey:            "YOUR_API_KEY",
+    authDomain:        "YOUR_PROJECT.firebaseapp.com",
+    projectId:         "YOUR_PROJECT",
+    storageBucket:     "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId:             "YOUR_APP_ID"
+  };
+  // ============================================================
+
+  const isConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY";
+
+  if (!isConfigured) {
+    document.getElementById('loadingOverlay').classList.remove('open');
+    document.getElementById('authOverlay').classList.add('open');
+    document.getElementById('configWarning').style.display = 'block';
+  } else {
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+    try { await enableIndexedDbPersistence(db); }
+    catch (err) { console.warn('[HMP] Offline persistence not available:', err.code); }
+    window.__fb = { auth, db, doc, setDoc, onSnapshot, signInWithPopup, GoogleAuthProvider, fbSignOut, onAuthStateChanged };
+    onAuthStateChanged(auth, user => window.__onAuthChange && window.__onAuthChange(user));
+  }
+</script>
+
+<!-- ============== APP LOGIC ============== -->
+<script>
+// ============== SEED DATA ==============
 const SEED_RECIPES = [
   { id:'r1', name:'Greek Yogurt & Berry Bowl', emoji:'🫐', category:'breakfast', cal:320, time:5,
     desc:'Protein-packed yogurt with fresh berries, oats and honey.',
@@ -399,29 +455,120 @@ const SEED_RECIPES = [
     tags:['high-protein','vegetarian'] }
 ];
 
-// ============== STATE ==============
-let recipes = load(STORAGE.recipes) || SEED_RECIPES;
-let plan = load(STORAGE.plan) || {}; // {dateISO: {breakfast:id, lunch:id, dinner:id, snack:id}}
-let pantry = load(STORAGE.pantry) || ['salt','pepper','olive oil'];
-let shopChecked = load(STORAGE.shopChecked) || {};
-let weekStart = load(STORAGE.weekStart) ? new Date(load(STORAGE.weekStart)) : startOfWeek(new Date());
-let pickTarget = null; // {date, slot}
-let editingRecipeId = null;
+// ============== APP STATE ==============
+let currentUser=null, unsubscribeSnapshot=null;
+let recipes=[], plan={}, pantry=[], shopChecked={};
+let weekStart=startOfWeek(new Date());
+let pickTarget=null, editingRecipeId=null, saveTimer=null, isApplyingRemote=false;
+
+// ============== AUTH ==============
+window.__onAuthChange = async user => {
+  currentUser = user;
+  if (user) {
+    document.getElementById('authOverlay').classList.remove('open');
+    document.getElementById('loadingOverlay').classList.add('open');
+    document.getElementById('userName').textContent = user.displayName || user.email || 'User';
+    document.getElementById('userAvatar').src = user.photoURL || '';
+    await subscribeToCloud(user.uid);
+  } else {
+    document.getElementById('app').style.display='none';
+    document.getElementById('loadingOverlay').classList.remove('open');
+    document.getElementById('authOverlay').classList.add('open');
+    if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot=null; }
+  }
+};
+function signIn(){
+  if(!window.__fb) return;
+  const provider = new window.__fb.GoogleAuthProvider();
+  window.__fb.signInWithPopup(window.__fb.auth, provider)
+    .catch(err => { console.error(err); alert('Sign-in failed: '+err.message); });
+}
+function signOut(){
+  if(!window.__fb) return;
+  if(!confirm('Sign out? Your data stays safe in the cloud.')) return;
+  window.__fb.fbSignOut(window.__fb.auth);
+}
+
+// ============== CLOUD SYNC ==============
+async function subscribeToCloud(uid){
+  const { db, doc, onSnapshot } = window.__fb;
+  const userDocRef = doc(db, 'users', uid, 'state', 'main');
+  unsubscribeSnapshot = onSnapshot(userDocRef, async snap => {
+    if(snap.exists()){
+      const data = snap.data();
+      isApplyingRemote = true;
+      recipes     = Array.isArray(data.recipes) ? data.recipes : SEED_RECIPES;
+      plan        = (typeof data.plan==='object' && data.plan) ? data.plan : {};
+      pantry      = Array.isArray(data.pantry) ? data.pantry : ['salt','pepper','olive oil'];
+      shopChecked = (typeof data.shopChecked==='object' && data.shopChecked) ? data.shopChecked : {};
+      weekStart   = data.weekStart ? new Date(data.weekStart) : startOfWeek(new Date());
+      if(isNaN(weekStart.getTime())) weekStart = startOfWeek(new Date());
+      isApplyingRemote = false;
+      renderAll(); showApp();
+      setSyncStatus(navigator.onLine ? 'online' : 'offline');
+    } else {
+      await handleFirstTime(userDocRef);
+    }
+  }, err => { console.error(err); setSyncStatus('offline'); });
+}
+async function handleFirstTime(userDocRef){
+  const { setDoc } = window.__fb;
+  const legacy = loadLegacyLocalData();
+  let initial = {
+    recipes:SEED_RECIPES, plan:{}, pantry:['salt','pepper','olive oil'],
+    shopChecked:{}, weekStart:startOfWeek(new Date()).toISOString(),
+    updatedAt:new Date().toISOString()
+  };
+  if(legacy && (legacy.recipes?.length || Object.keys(legacy.plan||{}).length)){
+    if(confirm(`Found local data:\n• ${legacy.recipes?.length||0} recipes\n• ${Object.keys(legacy.plan||{}).length} days planned\n• ${legacy.pantry?.length||0} pantry items\n\nUpload it to the cloud?`)){
+      initial = { ...initial, ...legacy, updatedAt:new Date().toISOString() };
+    }
+  }
+  await setDoc(userDocRef, initial);
+}
+function loadLegacyLocalData(){
+  try {
+    const r = localStorage.getItem('hmp_recipes_v1');
+    const p = localStorage.getItem('hmp_plan_v1');
+    const pa = localStorage.getItem('hmp_pantry_v1');
+    if(!r && !p && !pa) return null;
+    return {
+      recipes: r ? JSON.parse(r) : SEED_RECIPES,
+      plan: p ? JSON.parse(p) : {},
+      pantry: pa ? JSON.parse(pa) : ['salt','pepper','olive oil'],
+      shopChecked: JSON.parse(localStorage.getItem('hmp_shop_v1')||'{}'),
+      weekStart: JSON.parse(localStorage.getItem('hmp_weekstart_v1')||'null') || startOfWeek(new Date()).toISOString()
+    };
+  } catch(e){ return null; }
+}
+function queueSave(){
+  if(isApplyingRemote || !currentUser || !window.__fb) return;
+  setSyncStatus('saving');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try {
+      const { db, doc, setDoc } = window.__fb;
+      const ref = doc(db, 'users', currentUser.uid, 'state', 'main');
+      await setDoc(ref, { recipes, plan, pantry, shopChecked, weekStart:weekStart.toISOString(), updatedAt:new Date().toISOString() });
+      setSyncStatus(navigator.onLine ? 'online' : 'offline');
+    } catch(e){ console.error(e); setSyncStatus('offline'); }
+  }, 400);
+}
+function setSyncStatus(state){
+  const badge = document.getElementById('syncBadge');
+  badge.classList.remove('online','saving','offline'); badge.classList.add(state);
+  document.getElementById('syncText').textContent = { online:'Synced', saving:'Saving…', offline:'Offline' }[state] || '';
+}
+window.addEventListener('online',  () => setSyncStatus('online'));
+window.addEventListener('offline', () => setSyncStatus('offline'));
+function showApp(){
+  document.getElementById('loadingOverlay').classList.remove('open');
+  document.getElementById('app').style.display='block';
+}
+function renderAll(){ renderPlanner(); renderRecipes(); renderPantry(); renderShopping(); }
 
 // ============== HELPERS ==============
-function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
-function load(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
-function saveAll(){
-  save(STORAGE.recipes,recipes);
-  save(STORAGE.plan,plan);
-  save(STORAGE.pantry,pantry);
-  save(STORAGE.shopChecked,shopChecked);
-  save(STORAGE.weekStart,weekStart.toISOString());
-}
-function startOfWeek(d){
-  const x = new Date(d); const day = x.getDay(); const diff = (day===0?-6:1)-day; // Monday
-  x.setDate(x.getDate()+diff); x.setHours(0,0,0,0); return x;
-}
+function startOfWeek(d){ const x=new Date(d); const day=x.getDay(); const diff=(day===0?-6:1)-day; x.setDate(x.getDate()+diff); x.setHours(0,0,0,0); return x; }
 function fmtDate(d){return d.toISOString().slice(0,10)}
 function dayName(d){return d.toLocaleDateString('en-US',{weekday:'long'})}
 function dayShortDate(d){return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}
@@ -458,33 +605,31 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 // ============== PLANNER ==============
 function shiftWeek(dir){
   if(dir===0) weekStart = startOfWeek(new Date());
-  else { const d = new Date(weekStart); d.setDate(d.getDate()+7*dir); weekStart = d; }
-  saveAll(); renderPlanner();
+  else { const d=new Date(weekStart); d.setDate(d.getDate()+7*dir); weekStart=d; }
+  queueSave(); renderPlanner();
 }
 function clearWeek(){
   if(!confirm('Clear all meals for this week?')) return;
   for(let i=0;i<7;i++){ const d=new Date(weekStart); d.setDate(d.getDate()+i); delete plan[fmtDate(d)]; }
-  saveAll(); renderPlanner();
+  queueSave(); renderPlanner();
 }
 function renderPlanner(){
-  const grid = document.getElementById('plannerGrid'); grid.innerHTML='';
-  const end = new Date(weekStart); end.setDate(end.getDate()+6);
+  const grid=document.getElementById('plannerGrid'); if(!grid) return; grid.innerHTML='';
+  const end=new Date(weekStart); end.setDate(end.getDate()+6);
   document.getElementById('week-range').textContent =
     `${weekStart.toLocaleDateString('en-US',{month:'long',day:'numeric'})} – ${end.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}`;
-
-  const slots = ['breakfast','lunch','dinner','snack'];
-  const slotIcons = {breakfast:'🌅',lunch:'☀️',dinner:'🌙',snack:'🍎'};
+  const slots=['breakfast','lunch','dinner','snack'];
+  const slotIcons={breakfast:'🌅',lunch:'☀️',dinner:'🌙',snack:'🍎'};
   for(let i=0;i<7;i++){
-    const d = new Date(weekStart); d.setDate(d.getDate()+i);
-    const key = fmtDate(d);
-    const dayPlan = plan[key] || {};
-    const dayDiv = document.createElement('div'); dayDiv.className='day';
-    dayDiv.innerHTML = `<h3>${dayName(d)} <span class="date">${dayShortDate(d)}</span></h3>`;
+    const d=new Date(weekStart); d.setDate(d.getDate()+i);
+    const key=fmtDate(d);
+    const dayPlan=plan[key]||{};
+    const dayDiv=document.createElement('div'); dayDiv.className='day';
+    dayDiv.innerHTML=`<h3>${dayName(d)} <span class="date">${dayShortDate(d)}</span></h3>`;
     slots.forEach(s=>{
-      const rid = dayPlan[s];
-      const r = rid ? findRecipe(rid) : null;
-      const slotDiv = document.createElement('div'); slotDiv.className='meal-slot';
-      slotDiv.innerHTML = `
+      const rid=dayPlan[s]; const r=rid?findRecipe(rid):null;
+      const slotDiv=document.createElement('div'); slotDiv.className='meal-slot';
+      slotDiv.innerHTML=`
         <label>${slotIcons[s]} ${s}</label>
         <div class="slot ${r?'':'empty'}" onclick="openPicker('${key}','${s}')">
           ${r
@@ -500,59 +645,54 @@ function renderPlanner(){
 }
 function clearSlot(date,slot){
   if(plan[date]){ delete plan[date][slot]; if(Object.keys(plan[date]).length===0) delete plan[date]; }
-  saveAll(); renderPlanner();
+  queueSave(); renderPlanner();
 }
 function updateStats(){
-  let mealCount=0, totalCal=0, daysWithMeals=0;
+  let mealCount=0,totalCal=0,daysWithMeals=0;
   for(let i=0;i<7;i++){
     const d=new Date(weekStart); d.setDate(d.getDate()+i);
-    const dp = plan[fmtDate(d)];
-    if(!dp) continue;
-    let dayCal=0, hasAny=false;
+    const dp=plan[fmtDate(d)]; if(!dp) continue;
+    let dayCal=0,hasAny=false;
     Object.values(dp).forEach(id=>{ const r=findRecipe(id); if(r){mealCount++;dayCal+=r.cal;hasAny=true;} });
     if(hasAny){daysWithMeals++;totalCal+=dayCal;}
   }
-  document.getElementById('stat-meals').textContent = mealCount;
-  document.getElementById('stat-cal').textContent = daysWithMeals ? Math.round(totalCal/daysWithMeals) : 0;
-  document.getElementById('stat-shop').textContent = computeShopping().reduce((a,g)=>a+g.items.length,0);
-  document.getElementById('stat-pantry').textContent = pantry.length;
+  document.getElementById('stat-meals').textContent=mealCount;
+  document.getElementById('stat-cal').textContent=daysWithMeals?Math.round(totalCal/daysWithMeals):0;
+  document.getElementById('stat-shop').textContent=computeShopping().reduce((a,g)=>a+g.items.length,0);
+  document.getElementById('stat-pantry').textContent=pantry.length;
 }
 
 // ============== PICKER MODAL ==============
 function openPicker(date,slot){
   pickTarget={date,slot};
-  document.getElementById('pickTarget').textContent =
-    `${dayName(new Date(date))} · ${slot.charAt(0).toUpperCase()+slot.slice(1)}`;
-  document.getElementById('pickSearch').value='';
-  renderPickList();
+  document.getElementById('pickTarget').textContent=`${dayName(new Date(date))} · ${slot.charAt(0).toUpperCase()+slot.slice(1)}`;
+  document.getElementById('pickSearch').value=''; renderPickList();
   document.getElementById('pickModal').classList.add('open');
 }
 function renderPickList(){
-  const q = (document.getElementById('pickSearch').value||'').toLowerCase();
-  const list = document.getElementById('pickList');
-  const preferred = pickTarget?.slot;
+  const q=(document.getElementById('pickSearch').value||'').toLowerCase();
+  const preferred=pickTarget?.slot;
   const filtered = recipes
     .filter(r => !q || r.name.toLowerCase().includes(q) || r.tags?.some(t=>t.toLowerCase().includes(q)))
     .sort((a,b)=> (a.category===preferred?-1:1) - (b.category===preferred?-1:1));
-  list.innerHTML = filtered.map(r=>`
+  document.getElementById('pickList').innerHTML = filtered.map(r=>`
     <div class="modal-recipe" onclick="assignRecipe('${r.id}')">
       <div class="emoji">${r.emoji}</div>
       <div class="info"><h5>${r.name}</h5><span>${r.category} · ${r.cal} kcal · ${r.time} min</span></div>
     </div>`).join('') || `<div class="empty-state"><div class="icon">🤷</div>No recipes match</div>`;
 }
 function assignRecipe(id){
-  const {date,slot} = pickTarget;
-  plan[date] = plan[date] || {};
-  plan[date][slot] = id;
-  saveAll(); renderPlanner(); closeModal('pickModal');
+  const {date,slot}=pickTarget;
+  plan[date]=plan[date]||{}; plan[date][slot]=id;
+  queueSave(); renderPlanner(); closeModal('pickModal');
 }
 function closeModal(id){document.getElementById(id).classList.remove('open')}
 
 // ============== RECIPES ==============
 function renderRecipes(){
-  const q = (document.getElementById('recipeSearch')?.value||'').toLowerCase();
-  const cat = document.getElementById('recipeFilter')?.value || '';
-  const grid = document.getElementById('recipesGrid');
+  const q=(document.getElementById('recipeSearch')?.value||'').toLowerCase();
+  const cat=document.getElementById('recipeFilter')?.value||'';
+  const grid=document.getElementById('recipesGrid'); if(!grid) return;
   const list = recipes.filter(r =>
     (!cat || r.category===cat) &&
     (!q || r.name.toLowerCase().includes(q) || r.tags?.some(t=>t.toLowerCase().includes(q)))
@@ -579,7 +719,7 @@ function renderRecipes(){
     </div>`).join('') || `<div class="empty-state"><div class="icon">🍽</div>No recipes yet — click "+ New recipe"</div>`;
 }
 function viewRecipe(id){
-  const r = findRecipe(id); if(!r) return;
+  const r=findRecipe(id); if(!r) return;
   document.getElementById('viewModalBody').innerHTML = `
     <h3>${r.emoji} ${r.name}</h3>
     <p class="muted">${r.desc||''}</p>
@@ -606,7 +746,7 @@ function deleteRecipe(id){
     Object.keys(plan[d]).forEach(s=>{ if(plan[d][s]===id) delete plan[d][s]; });
     if(Object.keys(plan[d]).length===0) delete plan[d];
   });
-  saveAll(); renderRecipes(); renderPlanner();
+  queueSave(); renderRecipes(); renderPlanner();
 }
 function openRecipeForm(){
   editingRecipeId=null;
@@ -616,7 +756,7 @@ function openRecipeForm(){
   document.getElementById('recipeModal').classList.add('open');
 }
 function editRecipe(id){
-  const r = findRecipe(id); if(!r) return;
+  const r=findRecipe(id); if(!r) return;
   editingRecipeId=id;
   document.getElementById('recipeModalTitle').textContent='Edit recipe';
   document.getElementById('rf-name').value=r.name;
@@ -630,11 +770,11 @@ function editRecipe(id){
   document.getElementById('recipeModal').classList.add('open');
 }
 function saveRecipe(){
-  const name = document.getElementById('rf-name').value.trim();
+  const name=document.getElementById('rf-name').value.trim();
   if(!name){alert('Please enter a recipe name');return;}
-  const ingRaw = document.getElementById('rf-ing').value.trim();
-  const ing = ingRaw.split('\n').map(l=>l.split(',').map(x=>x.trim())).filter(a=>a[0]);
-  const data = {
+  const ingRaw=document.getElementById('rf-ing').value.trim();
+  const ing=ingRaw.split('\n').map(l=>l.split(',').map(x=>x.trim())).filter(a=>a[0]);
+  const data={
     id: editingRecipeId || 'r'+Date.now(),
     name,
     emoji: document.getElementById('rf-emoji').value.trim() || '🍽',
@@ -645,32 +785,30 @@ function saveRecipe(){
     ing: ing.map(a=>[a[0], a[1]||'to taste']),
     tags: document.getElementById('rf-tags').value.split(',').map(t=>t.trim()).filter(Boolean)
   };
-  if(editingRecipeId){
-    const idx = recipes.findIndex(r=>r.id===editingRecipeId); recipes[idx]=data;
-  } else recipes.push(data);
-  saveAll(); closeModal('recipeModal'); renderRecipes(); renderPlanner();
+  if(editingRecipeId){ const idx=recipes.findIndex(r=>r.id===editingRecipeId); recipes[idx]=data; }
+  else recipes.push(data);
+  queueSave(); closeModal('recipeModal'); renderRecipes(); renderPlanner();
 }
 
 // ============== SHOPPING ==============
 function computeShopping(){
-  const agg = {}; // key: name -> {name, qty:[], count}
+  const agg={};
   for(let i=0;i<7;i++){
-    const d = new Date(weekStart); d.setDate(d.getDate()+i);
-    const dp = plan[fmtDate(d)]; if(!dp) continue;
+    const d=new Date(weekStart); d.setDate(d.getDate()+i);
+    const dp=plan[fmtDate(d)]; if(!dp) continue;
     Object.values(dp).forEach(id=>{
-      const r = findRecipe(id); if(!r) return;
+      const r=findRecipe(id); if(!r) return;
       r.ing.forEach(([n,q])=>{
         if(inPantry(n)) return;
-        const key = normalizeIng(n);
+        const key=normalizeIng(n);
         if(!agg[key]) agg[key]={name:n,qty:[q],count:1};
         else {agg[key].qty.push(q);agg[key].count++;}
       });
     });
   }
-  // group by category
-  const groups = {};
+  const groups={};
   Object.values(agg).forEach(item=>{
-    const cat = categorize(item.name);
+    const cat=categorize(item.name);
     if(!groups[cat]) groups[cat]=[];
     groups[cat].push(item);
   });
@@ -678,21 +816,20 @@ function computeShopping(){
     .sort((a,b)=>a.cat.localeCompare(b.cat));
 }
 function renderShopping(){
-  const card = document.getElementById('shoppingCard');
-  const groups = computeShopping();
+  const card=document.getElementById('shoppingCard'); if(!card) return;
+  const groups=computeShopping();
   if(groups.length===0){
-    card.innerHTML = `<div class="empty-state"><div class="icon">🛒</div>
-      Your shopping list is empty.<br/><small>Plan some meals to see missing ingredients here.</small></div>`;
+    card.innerHTML = `<div class="empty-state"><div class="icon">🛒</div>Your shopping list is empty.<br/><small>Plan some meals to see missing ingredients here.</small></div>`;
     return;
   }
-  const half = Math.ceil(groups.length/2);
-  const col1 = groups.slice(0,half), col2 = groups.slice(half);
+  const half=Math.ceil(groups.length/2);
+  const col1=groups.slice(0,half), col2=groups.slice(half);
   const renderCol = arr => arr.map(g=>`
     <div class="category-group">
       <h4>${g.cat}</h4>
       ${g.items.map(it=>{
-        const key = normalizeIng(it.name);
-        const checked = !!shopChecked[key];
+        const key=normalizeIng(it.name);
+        const checked=!!shopChecked[key];
         return `<div class="shop-item ${checked?'checked':''}">
           <input type="checkbox" ${checked?'checked':''} onchange="toggleShop('${key}')" />
           <div class="name">${it.name}</div>
@@ -702,34 +839,24 @@ function renderShopping(){
     </div>`).join('');
   card.innerHTML = `<div class="shop-grid"><div>${renderCol(col1)}</div><div>${renderCol(col2)}</div></div>`;
 }
-function toggleShop(key){
-  shopChecked[key] = !shopChecked[key];
-  saveAll(); renderShopping();
-}
-function clearChecked(){
-  shopChecked={}; saveAll(); renderShopping();
-}
+function toggleShop(key){ shopChecked[key]=!shopChecked[key]; queueSave(); renderShopping(); }
+function clearChecked(){ shopChecked={}; queueSave(); renderShopping(); }
 function copyShoppingList(){
-  const groups = computeShopping();
+  const groups=computeShopping();
   const text = groups.map(g=>`${g.cat}\n${g.items.map(it=>`  • ${it.name} — ${it.qty.join(' + ')}`).join('\n')}`).join('\n\n');
   navigator.clipboard.writeText(text).then(()=>alert('Shopping list copied to clipboard!'));
 }
 
 // ============== PANTRY ==============
 function addPantry(){
-  const inp = document.getElementById('pantryInput');
-  const v = inp.value.trim(); if(!v) return;
-  v.split(',').map(x=>x.trim()).filter(Boolean).forEach(item=>{
-    if(!pantry.includes(item)) pantry.push(item);
-  });
-  inp.value=''; saveAll(); renderPantry(); updateStats();
+  const inp=document.getElementById('pantryInput');
+  const v=inp.value.trim(); if(!v) return;
+  v.split(',').map(x=>x.trim()).filter(Boolean).forEach(item=>{ if(!pantry.includes(item)) pantry.push(item); });
+  inp.value=''; queueSave(); renderPantry(); updateStats();
 }
-function removePantry(item){
-  pantry = pantry.filter(p=>p!==item);
-  saveAll(); renderPantry(); updateStats();
-}
+function removePantry(item){ pantry=pantry.filter(p=>p!==item); queueSave(); renderPantry(); updateStats(); }
 function renderPantry(){
-  const list = document.getElementById('pantryList');
+  const list=document.getElementById('pantryList'); if(!list) return;
   if(pantry.length===0){
     list.innerHTML = `<div class="empty-state" style="width:100%"><div class="icon">🥫</div>Your pantry is empty. Add staples to skip them from your shopping list.</div>`;
     return;
@@ -737,29 +864,115 @@ function renderPantry(){
   list.innerHTML = pantry.map(p=>`<div class="pantry-chip">${p}<button onclick="removePantry('${p.replace(/'/g,"\\'")}')">×</button></div>`).join('');
 }
 
+// ============== EXPORT / IMPORT BACKUP ==============
+const BACKUP_VERSION=2;
+function exportBackup(){
+  const backup={app:'Healthy Meal Planner',version:BACKUP_VERSION,exportedAt:new Date().toISOString(),
+    data:{recipes,plan,pantry,shopChecked,weekStart:weekStart.toISOString()}};
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`meal-planner-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function importBackup(event){
+  const file=event.target.files?.[0]; event.target.value=''; if(!file) return;
+  const reader=new FileReader();
+  reader.onload = e => {
+    try{
+      const backup=JSON.parse(e.target.result);
+      if(!backup?.data) throw new Error('Invalid backup format.');
+      const d=backup.data;
+      if(!Array.isArray(d.recipes)) throw new Error('Missing recipes list.');
+      if(typeof d.plan!=='object'||!d.plan) throw new Error('Missing meal plan.');
+      if(!Array.isArray(d.pantry)) throw new Error('Missing pantry.');
+      const exportedAt = backup.exportedAt ? new Date(backup.exportedAt).toLocaleString() : 'unknown';
+      if(!confirm(`Import backup?\n\n• Exported: ${exportedAt}\n• Recipes: ${d.recipes.length}\n• Days planned: ${Object.keys(d.plan).length}\n• Pantry: ${d.pantry.length}\n\n⚠️ This REPLACES current data on ALL your synced devices.`)) return;
+      recipes=d.recipes; plan=d.plan; pantry=d.pantry;
+      shopChecked=(typeof d.shopChecked==='object'&&d.shopChecked)?d.shopChecked:{};
+      weekStart=d.weekStart?new Date(d.weekStart):startOfWeek(new Date());
+      if(isNaN(weekStart.getTime())) weekStart=startOfWeek(new Date());
+      queueSave(); renderAll();
+      alert('✅ Backup imported and synced to cloud!');
+    } catch(err){ console.error(err); alert(`❌ Could not import: ${err.message}`); }
+  };
+  reader.readAsText(file);
+}
+
 // ============== CLICK OUTSIDE MODAL ==============
 document.querySelectorAll('.modal-back').forEach(m=>{
   m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); });
 });
 
+// ============== PWA: SERVICE WORKER + INSTALL PROMPT ==============
+let deferredInstallPrompt = null;
+let waitingWorker = null;
 
-  
-// ============== INIT ==============
-renderPlanner();
-renderRecipes();
-renderPantry();
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      console.log('[HMP] Service worker registered.');
 
-  // ============== FIREBASE ==============
+      // Detect update available
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        nw?.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            waitingWorker = nw;
+            document.getElementById('updateToast').classList.add('show');
+          }
+        });
+      });
 
- const firebaseConfig = {
-  apiKey: "AIzaSyBBA2-n_sNYNjHwG9zzNdE8qB_HfuHTNp8",
-  authDomain: "mealplanner-6e1f3.firebaseapp.com",
-  projectId: "mealplanner-6e1f3",
-  storageBucket: "mealplanner-6e1f3.firebasestorage.app",
-  messagingSenderId: "813415802967",
-  appId: "1:813415802967:web:fb059a55ef2eea7bf05b12"
-};
-  
+      // Check for updates every hour while app is open
+      setInterval(() => reg.update().catch(()=>{}), 60 * 60 * 1000);
+    }).catch(err => console.warn('[HMP] SW registration failed:', err));
+
+    // Reload once the new worker takes control
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (waitingWorker) window.location.reload();
+    });
+  });
+}
+
+function applyUpdate(){
+  if(waitingWorker){ waitingWorker.postMessage('SKIP_WAITING'); }
+  else window.location.reload();
+}
+
+// Install prompt (Android / desktop Chrome / Edge)
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if(!localStorage.getItem('hmp_install_dismissed')){
+    setTimeout(() => document.getElementById('installToast').classList.add('show'), 3000);
+  }
+});
+function triggerInstall(){
+  if(!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.finally(() => {
+    deferredInstallPrompt = null;
+    document.getElementById('installToast').classList.remove('show');
+  });
+}
+function dismissInstall(){
+  localStorage.setItem('hmp_install_dismissed','1');
+  document.getElementById('installToast').classList.remove('show');
+}
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installToast').classList.remove('show');
+  console.log('[HMP] App installed 🎉');
+});
+
+// Expose to global for inline onclick handlers
+Object.assign(window, {
+  signIn, signOut, shiftWeek, clearWeek, clearSlot, openPicker, renderPickList,
+  assignRecipe, closeModal, viewRecipe, deleteRecipe, openRecipeForm, editRecipe,
+  saveRecipe, toggleShop, clearChecked, copyShoppingList, addPantry, removePantry,
+  exportBackup, importBackup, applyUpdate, triggerInstall, dismissInstall
+});
 </script>
 </body>
 </html>
