@@ -1,0 +1,62 @@
+{
+  "name": "Healthy Meal Planner",
+  "short_name": "Meal Planner",
+  "description": "Plan healthy meals and generate smart shopping lists — synced across your devices.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#d8f3dc",
+  "theme_color": "#2d6a4f",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["food", "lifestyle", "health", "productivity"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "This week's plan",
+      "short_name": "Planner",
+      "description": "Jump to the weekly meal planner",
+      "url": "./index.html#planner",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Shopping list",
+      "short_name": "Shopping",
+      "description": "See what to buy",
+      "url": "./index.html#shopping",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
