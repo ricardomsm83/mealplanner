@@ -497,7 +497,7 @@ async function subscribeToCloud(uid){
     if(snap.exists()){
       const data = snap.data();
       isApplyingRemote = true;
-      recipes     = Array.isArray(data.recipes) ? data.recipes : SEED_RECIPES;
+      recipes     = Array.isArray(data.recipes) ? deserializeRecipes(data.recipes) : SEED_RECIPES;
       plan        = (typeof data.plan==='object' && data.plan) ? data.plan : {};
       pantry      = Array.isArray(data.pantry) ? data.pantry : ['salt','pepper','olive oil'];
       shopChecked = (typeof data.shopChecked==='object' && data.shopChecked) ? data.shopChecked : {};
@@ -515,13 +515,13 @@ async function handleFirstTime(userDocRef){
   const { setDoc } = window.__fb;
   const legacy = loadLegacyLocalData();
   let initial = {
-    recipes:SEED_RECIPES, plan:{}, pantry:['salt','pepper','olive oil'],
+    recipes: serializeRecipes(SEED_RECIPES), plan:{}, pantry:['salt','pepper','olive oil'],
     shopChecked:{}, weekStart:startOfWeek(new Date()).toISOString(),
     updatedAt:new Date().toISOString()
   };
   if(legacy && (legacy.recipes?.length || Object.keys(legacy.plan||{}).length)){
     if(confirm(`Found local data:\n• ${legacy.recipes?.length||0} recipes\n• ${Object.keys(legacy.plan||{}).length} days planned\n• ${legacy.pantry?.length||0} pantry items\n\nUpload it to the cloud?`)){
-      initial = { ...initial, ...legacy, updatedAt:new Date().toISOString() };
+      initial = { ...initial, ...legacy, recipes: serializeRecipes(legacy.recipes||SEED_RECIPES), updatedAt:new Date().toISOString() };
     }
   }
   await setDoc(userDocRef, initial);
@@ -549,7 +549,12 @@ function queueSave(){
     try {
       const { db, doc, setDoc } = window.__fb;
       const ref = doc(db, 'users', currentUser.uid, 'state', 'main');
-      await setDoc(ref, { recipes, plan, pantry, shopChecked, weekStart:weekStart.toISOString(), updatedAt:new Date().toISOString() });
+      await setDoc(ref, {
+  recipes: serializeRecipes(recipes),
+  plan, pantry, shopChecked,
+  weekStart: weekStart.toISOString(),
+  updatedAt: new Date().toISOString()
+});
       setSyncStatus(navigator.onLine ? 'online' : 'offline');
     } catch(e){ console.error(e); setSyncStatus('offline'); }
   }, 400);
@@ -566,6 +571,26 @@ function showApp(){
   document.getElementById('app').style.display='block';
 }
 function renderAll(){ renderPlanner(); renderRecipes(); renderPantry(); renderShopping(); }
+// ============== FIRESTORE SERIALIZATION ==============
+// Firestore doesn't allow nested arrays, so we convert ingredient tuples
+// [name, qty]  ↔  {n: name, q: qty}  when saving / loading.
+function serializeRecipes(list){
+  return list.map(r => ({
+    ...r,
+    ing: (r.ing || []).map(pair =>
+      Array.isArray(pair) ? { n: pair[0] ?? '', q: pair[1] ?? '' } : pair
+    )
+  }));
+}
+function deserializeRecipes(list){
+  return list.map(r => ({
+    ...r,
+    ing: (r.ing || []).map(item =>
+      Array.isArray(item) ? item : [item?.n ?? '', item?.q ?? '']
+    )
+  }));
+}
+  
 
 // ============== HELPERS ==============
 function startOfWeek(d){ const x=new Date(d); const day=x.getDay(); const diff=(day===0?-6:1)-day; x.setDate(x.getDate()+diff); x.setHours(0,0,0,0); return x; }
